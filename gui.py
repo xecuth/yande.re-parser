@@ -10,7 +10,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.parser = None
+        self.task = None
 
         self.tags_line = ''
         self.page_count = 0
@@ -26,34 +26,41 @@ class MyWindow(QtWidgets.QMainWindow):
         self.explicit_content = True if self.ui.explicitContentCheckBox.isChecked() else False
 
         if self.tags_line and self.page_count and self.save_path:
-            self.parse()
+            self.on_start()
         else:
-            self.btn_desc('WARNING! You dont fill all items!')
+            self.message_out('WARNING! You dont fill all items!')
 
-    def parse(self):
-        self.parser = Parser({
+    def on_start(self):
+        self.task = Parser({
                             'save_path': self.save_path,
                             'explicit_mode': self.explicit_content,
                             'tags': self.tags_line,
                             'page_count': self.page_count
-                            },
-                            status_output=self.pb_desc,
-                            message_output=self.btn_desc,
-                            pb_inc=self.pb_increase)
+                            })
 
-        self.parser.get_image_urls()
+
         self.ui.progressBar.setValue(0)
-        self.ui.progressBar.setMaximum(len(self.parser.urls_of_images))
-        self.parser.parsing()
 
-    def btn_desc(self, msg):
+        self.task.pb_updated.connect(self.pb_update)
+        self.task.message_out_update.connect(self.message_out)
+        self.task.status_out_update.connect(self.status_out)
+        self.task.pb_max.connect(self.pb_setmax)
+
+        self.task.start()
+
+
+
+    def message_out(self, msg):
         self.ui.ButtonDescriptionLabel.setText(msg)
 
-    def pb_desc(self, msg):
+    def status_out(self, msg):
         self.ui.ProgressBarDescriptionLabel.setText(msg)
 
-    def pb_increase(self):
-        self.ui.progressBar.setValue(self.ui.progressBar.value() + 1)
+    def pb_update(self, val):
+        self.ui.progressBar.setValue(self.ui.progressBar.value() + val)
+
+    def pb_setmax(self, val):
+        self.ui.progressBar.setMaximum(val)
 
     def get_dir(self):
         file_name = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
@@ -61,6 +68,6 @@ class MyWindow(QtWidgets.QMainWindow):
             if os.sep == '\\':
                 file_name = file_name.replace('/', '\\')
             self.save_path = file_name
-            self.btn_desc('Folder Choosed!')
+            self.message_out('Folder Choosed!')
         else:
             return ""

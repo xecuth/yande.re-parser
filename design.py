@@ -1,12 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'qtdesign.ui'
-#
-# Created by: PyQt5 UI code generator 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -177,7 +169,7 @@ class Ui_MainWindow(object):
         self.startPushButton.setText(_translate("MainWindow", "START"))
         self.stopPushButton.setToolTip(_translate("MainWindow", "Stop parsing"))
         self.stopPushButton.setText(_translate("MainWindow", "STOP"))
-        self.numberOfProcessesLabel.setToolTip(_translate("MainWindow", "More processes - faster, but don\'t go too far"))
+        self.numberOfProcessesLabel.setToolTip(_translate("MainWindow", "Default value is optimized for your cpu"))
         self.numberOfProcessesLabel.setText(_translate("MainWindow", "Number of processes:"))
         self.numberOfProcessSetPushButton.setToolTip(_translate("MainWindow", "Fix spinbox value"))
         self.numberOfProcessSetPushButton.setText(_translate("MainWindow", "Set"))

@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from design import Ui_MainWindow
+from multiprocessing import cpu_count
 from parser_thread import ParserThread, QtWidgets, QtCore, QtGui, os
 
 
@@ -15,7 +17,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.explicit_content = False
         self.save_path = ''
 
-        self.process_count = 12
+        self.process_count = cpu_count()
         self.image_format = 'jpeg'
 
         self.ui.savePathPushButton.clicked.connect(self.get_dir)
@@ -28,6 +30,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.btn_group.addButton(self.ui.jpegRadioButton)
         self.ui.btn_group.addButton(self.ui.pngRadioButton)
         self.ui.btn_group.buttonClicked.connect(self.image_format_button_set)
+        self.ui.numberOfProcessesSpinBox.setMaximum(self.process_count + 3)
 
     def settings_verification(self):
         self.tags_line = self.ui.tagsQueryLineEdit.text()

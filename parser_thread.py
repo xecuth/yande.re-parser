@@ -12,7 +12,7 @@ class ParserThread(QtCore.QThread):
     pb_updated = QtCore.pyqtSignal(int)
     status_updated = QtCore.pyqtSignal(str)
     stop_message = QtCore.pyqtSignal()
-    wrong_tag = QtCore.pyqtSignal()
+    invalid_tag = QtCore.pyqtSignal()
     pb_max = QtCore.pyqtSignal(int)
     running = False
 
@@ -20,20 +20,20 @@ class ParserThread(QtCore.QThread):
         super(ParserThread, self).__init__()
 
         self.session = requests.Session()
-        self.session.headers['user-agent'] = "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko"
+        self.session.headers['user-agent'] = 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'
         self.settings = settings
         self.urls_of_images = []
         self.downloaded = 0
         self.mp_processes = process_count
 
         if not self.settings['explicit_mode']:
-            self.session.cookies.set("country", "RU")
-            self.session.cookies.set("vote", "1")
+            self.session.cookies.set('country', 'RU')
+            self.session.cookies.set('vote', '1')
 
 
     @staticmethod
     def generate_random_name():
-        alphabet = list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        alphabet = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
         random.shuffle(alphabet)
         return f"{''.join(random.sample(alphabet, 4))}.jpg"
 
@@ -53,25 +53,25 @@ class ParserThread(QtCore.QThread):
             params = dict(
                 tags=self.settings['tags'],
                 page=self.settings['page_count'],
-                commit="Search"
+                commit='Search'
             )
 
-            fs_paged = self.session.get(f"https://yande.re/post", params=params)
+            fs_paged = self.session.get(f'https://yande.re/post', params=params)
             fs_paged_res = html.fromstring(fs_paged.text)
 
             images = fs_paged_res.cssselect('ul#post-list-posts>li>a.directlink')
 
             if not images:
-                self.status_updated.emit("Program not found arts, sorry about that(")
-                self.wrong_tag.emit()
+                self.status_updated.emit('Program not found arts.')
+                self.invalid_tag.emit()
                 return
 
             for x in images:
-                self.urls_of_images.append(x.attrib["href"])
+                self.urls_of_images.append(x.attrib['href'])
 
             self.settings['page_count'] -= 1
 
-        self.status_updated.emit(f"Found {len(self.urls_of_images)} arts, start download")
+        self.status_updated.emit(f'Found {len(self.urls_of_images)} arts, start download')
 
     def parsing(self):
         self.status_updated.emit('Downloading...')
@@ -82,7 +82,7 @@ class ParserThread(QtCore.QThread):
         image_pool = ThreadPool(self.mp_processes).imap_unordered(self.download_image, self.urls_of_images)
 
         for i in image_pool:
-            self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}")
+            self.status_updated.emit(f'[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}')
             self.downloaded += 1
             self.pb_updated.emit(1)
 
@@ -92,11 +92,11 @@ class ParserThread(QtCore.QThread):
         self.running = False
 
         msg = QtWidgets.QMessageBox()
-        msg.setWindowIcon(QtGui.QIcon("favicon.ico"))
-        msg.setText(f'Program end work.\nDownloaded {self.downloaded} images.')
+        msg.setWindowIcon(QtGui.QIcon('favicon.ico'))
+        msg.setText(f'Program finished work.\nDownloaded {self.downloaded} images.')
         msg.setWindowTitle('Information')
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        self.status_updated.emit('Program stopped')
+        self.status_updated.emit('Program stopped.')
         msg.exec_()
 
     def run(self):

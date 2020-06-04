@@ -45,6 +45,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.parser_task.pb_updated.connect(self.pb_update)
         self.parser_task.status_updated.connect(self.status_update)
         self.parser_task.stop_message.connect(self.parser_task.stop)
+        self.parser_task.wrong_tag.connect(self.wrong_tag_dlg)
         self.parser_task.pb_max.connect(self.pb_setmax)
 
         self.parser_task.start()
@@ -94,6 +95,15 @@ class MyWindow(QtWidgets.QMainWindow):
             message += 'You dont choose save path'
 
         msg.setDetailedText(message)
+        msg.setWindowTitle('Warning')
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    @staticmethod
+    def wrong_tag_dlg():
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowIcon(QtGui.QIcon("favicon.ico"))
+        msg.setText('Wrong tag line')
         msg.setWindowTitle('Warning')
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()

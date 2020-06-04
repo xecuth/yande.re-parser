@@ -10,6 +10,7 @@ class ParserThread(QtCore.QThread):
     pb_updated = QtCore.pyqtSignal(int)
     status_updated = QtCore.pyqtSignal(str)
     stop_message = QtCore.pyqtSignal()
+    wrong_tag = QtCore.pyqtSignal()
     pb_max = QtCore.pyqtSignal(int)
     running = False
 
@@ -61,16 +62,18 @@ class ParserThread(QtCore.QThread):
             images = fs_paged_res.cssselect('ul#post-list-posts>li>a.directlink')
 
             if not images:
-                return self.status_updated.emit("Program not found arts, sorry about that(")
+                self.status_updated.emit("Program not found arts, sorry about that(")
+                self.wrong_tag.emit()
+                return
 
             for x in images:
                 self.urls_of_images.append(x.attrib["href"])
 
             self.settings['page_count'] -= 1
-            QtCore.QThread.msleep(50)
+            QtCore.QThread.msleep(500)
 
         self.status_updated.emit(f"Found {len(self.urls_of_images)} arts, start download")
-        QtCore.QThread.msleep(50)
+        QtCore.QThread.msleep(500)
 
     def parsing(self):
         self.status_updated.emit('Downloading...')
@@ -88,7 +91,7 @@ class ParserThread(QtCore.QThread):
                 else:
                     self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]\nError while loading image")
                 self.pb_updated.emit(1)
-                QtCore.QThread.msleep(50)
+                QtCore.QThread.msleep(500)
             else:
                 break
 
@@ -105,9 +108,9 @@ class ParserThread(QtCore.QThread):
         msg.exec_()
 
     def run(self):
-        self.get_image_urls()
-        self.pb_max.emit(len(self.urls_of_images))
-        self.parsing()
+        if self.get_image_urls():
+            self.pb_max.emit(len(self.urls_of_images))
+            self.parsing()
 
         if self.running:
             self.stop_message.emit()

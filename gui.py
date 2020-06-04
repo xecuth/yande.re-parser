@@ -1,6 +1,5 @@
-import os
 from design import Ui_MainWindow
-from parser_thread import ParserThread, QtWidgets, QtGui
+from parser_thread import ParserThread, QtWidgets, QtCore, QtGui, os
 
 
 class MyWindow(QtWidgets.QMainWindow):
@@ -16,10 +15,14 @@ class MyWindow(QtWidgets.QMainWindow):
         self.explicit_content = False
         self.save_path = ''
 
+        self.process_count = 12
+
         self.ui.savePathPushButton.clicked.connect(self.get_dir)
         self.ui.startPushButton.clicked.connect(self.event_checker)
         self.ui.stopPushButton.clicked.connect(self.on_stop)
         self.ui.actionAuthor_2.triggered.connect(self.about_author_dlg)
+        self.ui.actionMultiprocessing.triggered.connect(self.mp_settings)
+        self.ui.numberOfProcessSetPushButton.clicked.connect(self.set_process_count)
 
     def event_checker(self):
         self.tags_line = self.ui.tagsQueryLineEdit.text()
@@ -37,7 +40,7 @@ class MyWindow(QtWidgets.QMainWindow):
                             'explicit_mode': self.explicit_content,
                             'tags': self.tags_line,
                             'page_count': self.page_count
-                            })
+                            }, process_count=self.process_count)
 
 
         self.ui.progressBar.setValue(0)
@@ -108,3 +111,23 @@ class MyWindow(QtWidgets.QMainWindow):
         msg.setWindowTitle('Warning')
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
+
+    def set_process_count(self):
+        self.process_count = int(self.ui.numberOfProcessesSpinBox.text())
+        self.status_update(f'Number of process changed to {self.process_count}')
+
+    def mp_settings(self):
+        if self.ui.actionMultiprocessing.text() == 'Show MP settings':
+            self.resize(800, 250)
+            self.setMinimumSize(QtCore.QSize(800, 250))
+            self.setMaximumSize(QtCore.QSize(800, 250))
+            self.ui.numberOfProcessesSpinBox.setValue(self.process_count)
+            self.ui.actionMultiprocessing.setText('Close MP settings')
+        else:
+            self.resize(800, 200)
+            self.setMinimumSize(QtCore.QSize(800, 200))
+            self.setMaximumSize(QtCore.QSize(800, 200))
+            self.ui.actionMultiprocessing.setText('Show MP settings')
+
+
+

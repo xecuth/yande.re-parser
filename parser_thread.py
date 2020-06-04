@@ -1,11 +1,11 @@
+import os
+import io
 import random
 import requests
 from PIL import Image
-from multiprocessing.pool import ThreadPool
-import os
-import io
 from lxml import html
 from PyQt5 import QtCore, QtWidgets, QtGui
+from multiprocessing.pool import ThreadPool
 
 
 class ParserThread(QtCore.QThread):
@@ -16,7 +16,7 @@ class ParserThread(QtCore.QThread):
     pb_max = QtCore.pyqtSignal(int)
     running = False
 
-    def __init__(self, settings):
+    def __init__(self, settings, process_count):
         super(ParserThread, self).__init__()
 
         self.session = requests.Session()
@@ -24,7 +24,7 @@ class ParserThread(QtCore.QThread):
         self.settings = settings
         self.urls_of_images = []
         self.downloaded = 0
-        self.mp_processes = 12
+        self.mp_processes = process_count
 
         if not self.settings['explicit_mode']:
             self.session.cookies.set("country", "RU")

@@ -1,9 +1,9 @@
 import sys
 import gui
 
+if __name__ == '__main__':
+    app = gui.QtWidgets.QApplication([])
+    application = gui.MyWindow()
+    application.show()
 
-app = gui.QtWidgets.QApplication([])
-application = gui.MyWindow()
-application.show()
-
-sys.exit(app.exec())
+    sys.exit(app.exec())

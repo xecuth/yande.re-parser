@@ -2,25 +2,25 @@ import random
 import requests
 import shutil
 import os
-import time
 from lxml import html
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 
 
-class Parser(QtCore.QThread):
+class ParserThread(QtCore.QThread):
     pb_updated = QtCore.pyqtSignal(int)
-    message_out_update = QtCore.pyqtSignal(str)
-    status_out_update = QtCore.pyqtSignal(str)
+    status_updated = QtCore.pyqtSignal(str)
+    stop_message = QtCore.pyqtSignal()
     pb_max = QtCore.pyqtSignal(int)
     running = False
 
     def __init__(self, settings):
-        super(Parser, self).__init__()
+        super(ParserThread, self).__init__()
 
         self.session = requests.Session()
         self.session.headers['user-agent'] = "Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko"
         self.settings = settings
         self.urls_of_images = []
+        self.downloaded = 0
 
         if not self.settings['explicit_mode']:
             self.session.cookies.set("country", "RU")
@@ -43,7 +43,7 @@ class Parser(QtCore.QThread):
                 img_bytes.raw.decode_content = True
                 shutil.copyfileobj(img_bytes.raw, f)
         except Exception as e:
-            self.message_out_update.emit(f"ERROR: {e}")
+            self.status_updated.emit(f"ERROR: {e}")
             return None
         return name
 
@@ -61,36 +61,52 @@ class Parser(QtCore.QThread):
             images = fs_paged_res.cssselect('ul#post-list-posts>li>a.directlink')
 
             if not images:
-                return self.message_out_update.emit("Program not found arts, sorry about that(")
+                return self.status_updated.emit("Program not found arts, sorry about that(")
 
             for x in images:
                 self.urls_of_images.append(x.attrib["href"])
 
             self.settings['page_count'] -= 1
-            time.sleep(.5)
+            QtCore.QThread.msleep(50)
 
-        self.message_out_update.emit(f"Found {len(self.urls_of_images)} arts, start download")
+        self.status_updated.emit(f"Found {len(self.urls_of_images)} arts, start download")
 
     def parsing(self):
-        self.message_out_update.emit('Downloading...')
+        self.status_updated.emit('Downloading...')
+        self.running = True
 
         if not self.urls_of_images:
             self.get_image_urls()
-        pic_num = 1
+        self.downloaded = 0
         for x in self.urls_of_images:
-            pic_name = self.download_image(x)
-            if pic_num:
-                self.status_out_update.emit(f"[{pic_num}/{len(self.urls_of_images)}] Final download image {pic_name}")
+            if self.running:
+                self.downloaded += 1
+                pic_name = self.download_image(x)
+                if pic_name:
+                    self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]\nFinal download image {pic_name}")
+                else:
+                    self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]\nError while loading image")
+                self.pb_updated.emit(1)
+                QtCore.QThread.msleep(50)
             else:
-                self.status_out_update.emit(f"[{pic_num}/{len(self.urls_of_images)}] Error while loading image")
-            pic_num += 1
-            self.pb_updated.emit(1)
-            time.sleep(0.5)
+                break
 
-        self.message_out_update.emit('All pictures downloaded')
-        self.status_out_update.emit('Done!')
+        self.status_updated.emit('All pictures downloaded')
+
+    def stop(self):
+        self.running = False
+
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setText(f'Programm end work.\nDownloaded {self.downloaded} images.')
+        msg.setWindowTitle('Info')
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
 
     def run(self):
         self.get_image_urls()
         self.pb_max.emit(len(self.urls_of_images))
         self.parsing()
+
+        if self.running:
+            self.stop_message.emit()

@@ -1,7 +1,6 @@
 import os
-from PyQt5 import QtWidgets
 from design import Ui_MainWindow
-from yparser import Parser
+from yparser import ParserThread, QtWidgets
 
 
 class MyWindow(QtWidgets.QMainWindow):
@@ -10,28 +9,30 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        self.task = None
+        self.parser_task = None
 
         self.tags_line = ''
         self.page_count = 0
         self.explicit_content = False
         self.save_path = ''
 
-        self.ui.ChooseFolderPushButton.clicked.connect(self.get_dir)
-        self.ui.StartPushButton.clicked.connect(self.event_checker)
+        self.ui.savePathPushButton.clicked.connect(self.get_dir)
+        self.ui.startPushButton.clicked.connect(self.event_checker)
+
+        self.ui.stopPushButton.clicked.connect(self.on_stop)
 
     def event_checker(self):
-        self.tags_line = self.ui.TagsQueryLineEdit.text()
-        self.page_count = int(self.ui.PageCountSpinBox.text())
+        self.tags_line = self.ui.tagsQueryLineEdit.text()
+        self.page_count = int(self.ui.pageCountSpinBox.text())
         self.explicit_content = True if self.ui.explicitContentCheckBox.isChecked() else False
 
         if self.tags_line and self.page_count and self.save_path:
             self.on_start()
         else:
-            self.message_out('WARNING! You dont fill all items!')
+            self.message_update('WARNING! You dont fill all items!')
 
     def on_start(self):
-        self.task = Parser({
+        self.parser_task = ParserThread({
                             'save_path': self.save_path,
                             'explicit_mode': self.explicit_content,
                             'tags': self.tags_line,
@@ -41,20 +42,19 @@ class MyWindow(QtWidgets.QMainWindow):
 
         self.ui.progressBar.setValue(0)
 
-        self.task.pb_updated.connect(self.pb_update)
-        self.task.message_out_update.connect(self.message_out)
-        self.task.status_out_update.connect(self.status_out)
-        self.task.pb_max.connect(self.pb_setmax)
+        self.parser_task.pb_updated.connect(self.pb_update)
+        self.parser_task.status_updated.connect(self.status_update)
+        self.parser_task.stop_message.connect(self.parser_task.stop)
+        self.parser_task.pb_max.connect(self.pb_setmax)
 
-        self.task.start()
+        self.parser_task.start()
 
+    def on_stop(self):
+        if self.parser_task:
+            self.parser_task.stop()
 
-
-    def message_out(self, msg):
-        self.ui.ButtonDescriptionLabel.setText(msg)
-
-    def status_out(self, msg):
-        self.ui.ProgressBarDescriptionLabel.setText(msg)
+    def status_update(self, msg):
+        self.ui.statusLabel.setText(msg)
 
     def pb_update(self, val):
         self.ui.progressBar.setValue(self.ui.progressBar.value() + val)
@@ -68,6 +68,7 @@ class MyWindow(QtWidgets.QMainWindow):
             if os.sep == '\\':
                 file_name = file_name.replace('/', '\\')
             self.save_path = file_name
-            self.message_out('Folder Choosed!')
+            self.status_update('Folder Choosed!')
+            self.ui.savePathLineEdit.setText(self.save_path)
         else:
             return ""

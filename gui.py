@@ -1,6 +1,6 @@
 import os
 from design import Ui_MainWindow
-from yparser import ParserThread, QtWidgets, QtGui
+from parser_thread import ParserThread, QtWidgets, QtGui
 
 
 class MyWindow(QtWidgets.QMainWindow):
@@ -56,6 +56,7 @@ class MyWindow(QtWidgets.QMainWindow):
 
     def status_update(self, msg):
         self.ui.statusLabel.setText(msg)
+        self.ui.statusLabel.adjustSize()
 
     def pb_update(self, val):
         self.ui.progressBar.setValue(self.ui.progressBar.value() + val)

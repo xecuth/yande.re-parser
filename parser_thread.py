@@ -1,7 +1,9 @@
 import random
 import requests
-import shutil
+from PIL import Image
+from multiprocessing.pool import ThreadPool
 import os
+import io
 from lxml import html
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -22,6 +24,7 @@ class ParserThread(QtCore.QThread):
         self.settings = settings
         self.urls_of_images = []
         self.downloaded = 0
+        self.mp_processes = 12
 
         if not self.settings['explicit_mode']:
             self.session.cookies.set("country", "RU")
@@ -36,19 +39,16 @@ class ParserThread(QtCore.QThread):
 
     def download_image(self, url):
         name = self.generate_random_name()
-        img_bytes = requests.get(url, stream=True)
-        try:
-            if not os.path.exists(f"{self.settings['save_path']}/"):
-                os.makedirs(f"{self.settings['save_path']}/")
-            with open(f"{self.settings['save_path']}/{name}", 'wb') as f:
-                img_bytes.raw.decode_content = True
-                shutil.copyfileobj(img_bytes.raw, f)
-        except Exception as e:
-            self.status_updated.emit(f"ERROR: {e}")
-            return None
+        res = requests.get(url, stream=True)
+        if not os.path.exists(f"{self.settings['save_path']}/"):
+            os.makedirs(f"{self.settings['save_path']}/")
+
+        img = Image.open(io.BytesIO(res.content))
+        img.save(self.settings['save_path'] + '\\' + name)
         return name
 
     def get_image_urls(self):
+        self.status_updated.emit('Image urls searching. It can take some time..')
         while self.settings['page_count'] >= 1:
             params = dict(
                 tags=self.settings['tags'],
@@ -70,30 +70,21 @@ class ParserThread(QtCore.QThread):
                 self.urls_of_images.append(x.attrib["href"])
 
             self.settings['page_count'] -= 1
-            QtCore.QThread.msleep(500)
 
         self.status_updated.emit(f"Found {len(self.urls_of_images)} arts, start download")
-        QtCore.QThread.msleep(500)
 
     def parsing(self):
         self.status_updated.emit('Downloading...')
         self.running = True
 
-        if not self.urls_of_images:
-            self.get_image_urls()
         self.downloaded = 0
-        for x in self.urls_of_images:
-            if self.running:
-                self.downloaded += 1
-                pic_name = self.download_image(x)
-                if pic_name:
-                    self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]\nFinal download image {pic_name}")
-                else:
-                    self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]\nError while loading image")
-                self.pb_updated.emit(1)
-                QtCore.QThread.msleep(500)
-            else:
-                break
+
+        image_pool = ThreadPool(self.mp_processes).imap_unordered(self.download_image, self.urls_of_images)
+
+        for i in image_pool:
+            self.status_updated.emit(f"[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}")
+            self.downloaded += 1
+            self.pb_updated.emit(1)
 
         self.status_updated.emit('All pictures downloaded')
 
@@ -105,12 +96,13 @@ class ParserThread(QtCore.QThread):
         msg.setText(f'Program end work.\nDownloaded {self.downloaded} images.')
         msg.setWindowTitle('Information')
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        self.status_updated.emit('Program stopped')
         msg.exec_()
 
     def run(self):
-        if self.get_image_urls():
-            self.pb_max.emit(len(self.urls_of_images))
-            self.parsing()
+        self.get_image_urls()
+        self.pb_max.emit(len(self.urls_of_images))
+        self.parsing()
 
         if self.running:
             self.stop_message.emit()

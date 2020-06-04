@@ -35,7 +35,7 @@ class ParserThread(QtCore.QThread):
     def generate_random_name():
         alphabet = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
         random.shuffle(alphabet)
-        return f"{''.join(random.sample(alphabet, 4))}.jpg"
+        return f"{''.join(random.sample(alphabet, 4))}.png"
 
     def download_image(self, url):
         name = self.generate_random_name()
@@ -44,7 +44,7 @@ class ParserThread(QtCore.QThread):
             os.makedirs(f"{self.settings['save_path']}/")
 
         img = Image.open(io.BytesIO(res.content))
-        img.save(self.settings['save_path'] + '\\' + name)
+        img.save(self.settings['save_path'] + '\\' + name, 'PNG')
         return name
 
     def get_image_urls(self):
@@ -72,19 +72,25 @@ class ParserThread(QtCore.QThread):
             self.settings['page_count'] -= 1
 
         self.status_updated.emit(f'Found {len(self.urls_of_images)} arts, start download')
+        return True
+
+
 
     def parsing(self):
         self.status_updated.emit('Downloading...')
         self.running = True
 
         self.downloaded = 0
+        image_pool = ThreadPool(self.mp_processes)
 
-        image_pool = ThreadPool(self.mp_processes).imap_unordered(self.download_image, self.urls_of_images)
-
-        for i in image_pool:
-            self.status_updated.emit(f'[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}')
-            self.downloaded += 1
-            self.pb_updated.emit(1)
+        for i in image_pool.imap_unordered(self.download_image, self.urls_of_images):
+            if self.running:
+                self.status_updated.emit(f'[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}')
+                self.downloaded += 1
+                self.pb_updated.emit(1)
+            else:
+                image_pool.terminate()
+                return
 
         self.status_updated.emit('All pictures downloaded')
 
@@ -100,9 +106,9 @@ class ParserThread(QtCore.QThread):
         msg.exec_()
 
     def run(self):
-        self.get_image_urls()
-        self.pb_max.emit(len(self.urls_of_images))
-        self.parsing()
+        if self.get_image_urls():
+            self.pb_max.emit(len(self.urls_of_images))
+            self.parsing()
 
         if self.running:
             self.stop_message.emit()

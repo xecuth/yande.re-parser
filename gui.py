@@ -1,6 +1,6 @@
 import os
 from design import Ui_MainWindow
-from yparser import ParserThread, QtWidgets
+from yparser import ParserThread, QtWidgets, QtGui
 
 
 class MyWindow(QtWidgets.QMainWindow):
@@ -18,8 +18,8 @@ class MyWindow(QtWidgets.QMainWindow):
 
         self.ui.savePathPushButton.clicked.connect(self.get_dir)
         self.ui.startPushButton.clicked.connect(self.event_checker)
-
         self.ui.stopPushButton.clicked.connect(self.on_stop)
+        self.ui.actionAuthor_2.triggered.connect(self.about_author_dlg)
 
     def event_checker(self):
         self.tags_line = self.ui.tagsQueryLineEdit.text()
@@ -29,7 +29,7 @@ class MyWindow(QtWidgets.QMainWindow):
         if self.tags_line and self.page_count and self.save_path:
             self.on_start()
         else:
-            self.message_update('WARNING! You dont fill all items!')
+            self.unfilled_items()
 
     def on_start(self):
         self.parser_task = ParserThread({
@@ -72,3 +72,28 @@ class MyWindow(QtWidgets.QMainWindow):
             self.ui.savePathLineEdit.setText(self.save_path)
         else:
             return ""
+
+    @staticmethod
+    def about_author_dlg():
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowIcon(QtGui.QIcon("favicon.ico"))
+        msg.setText(f'Program written by xecuth\nLink: https://github.com/xecuth')
+        msg.setWindowTitle('Information')
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
+
+    def unfilled_items(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowIcon(QtGui.QIcon("favicon.ico"))
+        msg.setText('You dont fill all items')
+
+        message = ''
+        if not self.tags_line:
+            message += 'You dont fill tags\n'
+        if not self.save_path:
+            message += 'You dont choose save path'
+
+        msg.setDetailedText(message)
+        msg.setWindowTitle('Warning')
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()

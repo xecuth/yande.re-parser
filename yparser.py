@@ -3,7 +3,7 @@ import requests
 import shutil
 import os
 from lxml import html
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 
 class ParserThread(QtCore.QThread):
@@ -70,6 +70,7 @@ class ParserThread(QtCore.QThread):
             QtCore.QThread.msleep(50)
 
         self.status_updated.emit(f"Found {len(self.urls_of_images)} arts, start download")
+        QtCore.QThread.msleep(50)
 
     def parsing(self):
         self.status_updated.emit('Downloading...')
@@ -97,9 +98,9 @@ class ParserThread(QtCore.QThread):
         self.running = False
 
         msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
-        msg.setText(f'Programm end work.\nDownloaded {self.downloaded} images.')
-        msg.setWindowTitle('Info')
+        msg.setWindowIcon(QtGui.QIcon("favicon.ico"))
+        msg.setText(f'Program end work.\nDownloaded {self.downloaded} images.')
+        msg.setWindowTitle('Information')
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.exec_()
 

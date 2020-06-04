@@ -24,7 +24,7 @@ class MyWindow(QtWidgets.QMainWindow):
         self.ui.startPushButton.clicked.connect(self.settings_verification)
         self.ui.stopPushButton.clicked.connect(self.on_stop)
         self.ui.actionAuthor_2.triggered.connect(self.about_author_dlg)
-        self.ui.actionMultiprocessing.triggered.connect(self.show_settings)
+        self.ui.actionAdvanced.triggered.connect(self.show_advanced)
         self.ui.numberOfProcessSetPushButton.clicked.connect(self.set_process_count)
         self.ui.btn_group = QtWidgets.QButtonGroup()
         self.ui.btn_group.addButton(self.ui.jpegRadioButton)
@@ -132,18 +132,18 @@ class MyWindow(QtWidgets.QMainWindow):
         else:
             self.image_format = 'jpeg'
 
-    def show_settings(self):
-        if self.ui.actionMultiprocessing.text() == 'Show settings':
+    def show_advanced(self):
+        if self.ui.actionAdvanced.text() == 'Show advanced':
             self.resize(800, 250)
             self.setMinimumSize(QtCore.QSize(800, 250))
             self.setMaximumSize(QtCore.QSize(800, 250))
             self.ui.numberOfProcessesSpinBox.setValue(self.process_count)
-            self.ui.actionMultiprocessing.setText('Close settings')
+            self.ui.actionAdvanced.setText('Close advanced')
         else:
             self.resize(800, 200)
             self.setMinimumSize(QtCore.QSize(800, 200))
             self.setMaximumSize(QtCore.QSize(800, 200))
-            self.ui.actionMultiprocessing.setText('Show settings')
+            self.ui.actionAdvanced.setText('Show advanced')
 
 
 

@@ -5,9 +5,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 250)
+        MainWindow.resize(800, 200)
         MainWindow.setMinimumSize(QtCore.QSize(800, 200))
-        MainWindow.setMaximumSize(QtCore.QSize(800, 250))
+        MainWindow.setMaximumSize(QtCore.QSize(800, 200))
         font = QtGui.QFont()
         font.setFamily("DejaVu Math TeX Gyre")
         MainWindow.setFont(font)
@@ -143,10 +143,10 @@ class Ui_MainWindow(object):
         self.actionAuthor.setObjectName("actionAuthor")
         self.actionAuthor_2 = QtWidgets.QAction(MainWindow)
         self.actionAuthor_2.setObjectName("actionAuthor_2")
-        self.actionMultiprocessing = QtWidgets.QAction(MainWindow)
-        self.actionMultiprocessing.setObjectName("actionMultiprocessing")
+        self.actionAdvanced = QtWidgets.QAction(MainWindow)
+        self.actionAdvanced.setObjectName("actionAdvanced")
         self.menuAbout.addAction(self.actionAuthor_2)
-        self.menuSettings.addAction(self.actionMultiprocessing)
+        self.menuSettings.addAction(self.actionAdvanced)
         self.menuBar.addAction(self.menuAbout.menuAction())
         self.menuBar.addAction(self.menuSettings.menuAction())
 
@@ -183,4 +183,4 @@ class Ui_MainWindow(object):
         self.menuSettings.setTitle(_translate("MainWindow", "Other"))
         self.actionAuthor.setText(_translate("MainWindow", "Author"))
         self.actionAuthor_2.setText(_translate("MainWindow", "Author"))
-        self.actionMultiprocessing.setText(_translate("MainWindow", "Show MP settings"))
+        self.actionAdvanced.setText(_translate("MainWindow", "Show advanced"))

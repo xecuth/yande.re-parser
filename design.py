@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'des.ui'
+# Form implementation generated from reading ui file 'qtdesign.ui'
 #
 # Created by: PyQt5 UI code generator 5.13.2
 #
@@ -13,9 +13,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 200)
+        MainWindow.resize(800, 250)
         MainWindow.setMinimumSize(QtCore.QSize(800, 200))
-        MainWindow.setMaximumSize(QtCore.QSize(800, 200))
+        MainWindow.setMaximumSize(QtCore.QSize(800, 250))
         font = QtGui.QFont()
         font.setFamily("DejaVu Math TeX Gyre")
         MainWindow.setFont(font)
@@ -124,6 +124,20 @@ class Ui_MainWindow(object):
         self.numberOfProcessSetPushButton = QtWidgets.QPushButton(self.centralwidget)
         self.numberOfProcessSetPushButton.setGeometry(QtCore.QRect(250, 190, 51, 21))
         self.numberOfProcessSetPushButton.setObjectName("numberOfProcessSetPushButton")
+        self.imageFormatLabel = QtWidgets.QLabel(self.centralwidget)
+        self.imageFormatLabel.setGeometry(QtCore.QRect(460, 190, 121, 21))
+        font = QtGui.QFont()
+        font.setFamily("DejaVu Math TeX Gyre")
+        font.setPointSize(9)
+        self.imageFormatLabel.setFont(font)
+        self.imageFormatLabel.setObjectName("imageFormatLabel")
+        self.pngRadioButton = QtWidgets.QRadioButton(self.centralwidget)
+        self.pngRadioButton.setGeometry(QtCore.QRect(580, 190, 61, 20))
+        self.pngRadioButton.setObjectName("pngRadioButton")
+        self.jpegRadioButton = QtWidgets.QRadioButton(self.centralwidget)
+        self.jpegRadioButton.setGeometry(QtCore.QRect(640, 190, 61, 20))
+        self.jpegRadioButton.setChecked(True)
+        self.jpegRadioButton.setObjectName("jpegRadioButton")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 800, 26))
@@ -163,9 +177,16 @@ class Ui_MainWindow(object):
         self.startPushButton.setText(_translate("MainWindow", "START"))
         self.stopPushButton.setToolTip(_translate("MainWindow", "Stop parsing"))
         self.stopPushButton.setText(_translate("MainWindow", "STOP"))
-        self.numberOfProcessesLabel.setToolTip(_translate("MainWindow", "Choosing a save path; ex.: D:\\temp"))
+        self.numberOfProcessesLabel.setToolTip(_translate("MainWindow", "More processes - faster, but don\'t go too far"))
         self.numberOfProcessesLabel.setText(_translate("MainWindow", "Number of processes:"))
+        self.numberOfProcessSetPushButton.setToolTip(_translate("MainWindow", "Fix spinbox value"))
         self.numberOfProcessSetPushButton.setText(_translate("MainWindow", "Set"))
+        self.imageFormatLabel.setToolTip(_translate("MainWindow", "Choose image format for all downloads"))
+        self.imageFormatLabel.setText(_translate("MainWindow", "Image format:"))
+        self.pngRadioButton.setToolTip(_translate("MainWindow", "more quality, less speed"))
+        self.pngRadioButton.setText(_translate("MainWindow", "PNG"))
+        self.jpegRadioButton.setToolTip(_translate("MainWindow", "less quality, more speed"))
+        self.jpegRadioButton.setText(_translate("MainWindow", "JPEG"))
         self.menuAbout.setTitle(_translate("MainWindow", "About"))
         self.menuSettings.setTitle(_translate("MainWindow", "Other"))
         self.actionAuthor.setText(_translate("MainWindow", "Author"))

@@ -16,7 +16,7 @@ class ParserThread(QtCore.QThread):
     pb_max = QtCore.pyqtSignal(int)
     running = False
 
-    def __init__(self, settings, process_count):
+    def __init__(self, settings, process_count, image_format):
         super(ParserThread, self).__init__()
 
         self.session = requests.Session()
@@ -25,17 +25,16 @@ class ParserThread(QtCore.QThread):
         self.urls_of_images = []
         self.downloaded = 0
         self.mp_processes = process_count
+        self.image_format = image_format
 
         if not self.settings['explicit_mode']:
             self.session.cookies.set('country', 'RU')
             self.session.cookies.set('vote', '1')
 
-
-    @staticmethod
-    def generate_random_name():
+    def generate_random_name(self):
         alphabet = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
         random.shuffle(alphabet)
-        return f"{''.join(random.sample(alphabet, 4))}.png"
+        return f"{''.join(random.sample(alphabet, 4))}.{self.image_format}"
 
     def download_image(self, url):
         name = self.generate_random_name()
@@ -44,7 +43,7 @@ class ParserThread(QtCore.QThread):
             os.makedirs(f"{self.settings['save_path']}/")
 
         img = Image.open(io.BytesIO(res.content))
-        img.save(self.settings['save_path'] + '\\' + name, 'PNG')
+        img.save(self.settings['save_path'] + '\\' + name, self.image_format.upper())
         return name
 
     def get_image_urls(self):

@@ -16,13 +16,18 @@ class MyWindow(QtWidgets.QMainWindow):
         self.save_path = ''
 
         self.process_count = 12
+        self.image_format = 'jpeg'
 
         self.ui.savePathPushButton.clicked.connect(self.get_dir)
         self.ui.startPushButton.clicked.connect(self.settings_verification)
         self.ui.stopPushButton.clicked.connect(self.on_stop)
         self.ui.actionAuthor_2.triggered.connect(self.about_author_dlg)
-        self.ui.actionMultiprocessing.triggered.connect(self.mp_settings)
+        self.ui.actionMultiprocessing.triggered.connect(self.show_settings)
         self.ui.numberOfProcessSetPushButton.clicked.connect(self.set_process_count)
+        self.ui.btn_group = QtWidgets.QButtonGroup()
+        self.ui.btn_group.addButton(self.ui.jpegRadioButton)
+        self.ui.btn_group.addButton(self.ui.pngRadioButton)
+        self.ui.btn_group.buttonClicked.connect(self.image_format_button_set)
 
     def settings_verification(self):
         self.tags_line = self.ui.tagsQueryLineEdit.text()
@@ -40,7 +45,9 @@ class MyWindow(QtWidgets.QMainWindow):
                             'explicit_mode': self.explicit_content,
                             'tags': self.tags_line,
                             'page_count': self.page_count
-                            }, process_count=self.process_count)
+                            },
+                            process_count=self.process_count,
+                            image_format=self.image_format)
 
 
         self.ui.progressBar.setValue(0)
@@ -116,18 +123,24 @@ class MyWindow(QtWidgets.QMainWindow):
         self.process_count = int(self.ui.numberOfProcessesSpinBox.text())
         self.status_update(f'Number of process changed to {self.process_count}.')
 
-    def mp_settings(self):
-        if self.ui.actionMultiprocessing.text() == 'Show MP settings':
+    def image_format_button_set(self):
+        if self.ui.pngRadioButton.isChecked():
+            self.image_format = 'png'
+        else:
+            self.image_format = 'jpeg'
+
+    def show_settings(self):
+        if self.ui.actionMultiprocessing.text() == 'Show settings':
             self.resize(800, 250)
             self.setMinimumSize(QtCore.QSize(800, 250))
             self.setMaximumSize(QtCore.QSize(800, 250))
             self.ui.numberOfProcessesSpinBox.setValue(self.process_count)
-            self.ui.actionMultiprocessing.setText('Close MP settings')
+            self.ui.actionMultiprocessing.setText('Close settings')
         else:
             self.resize(800, 200)
             self.setMinimumSize(QtCore.QSize(800, 200))
             self.setMaximumSize(QtCore.QSize(800, 200))
-            self.ui.actionMultiprocessing.setText('Show MP settings')
+            self.ui.actionMultiprocessing.setText('Show settings')
 
 
 

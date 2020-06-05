@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
-import io
 import random
+import shutil
 import requests
-from PIL import Image
 from lxml import html
 from PyQt5 import QtCore, QtWidgets, QtGui
 from multiprocessing.pool import ThreadPool
@@ -39,12 +38,19 @@ class ParserThread(QtCore.QThread):
 
     def download_image(self, url):
         name = self.generate_random_name()
-        res = requests.get(url, stream=True)
-        if not os.path.exists(f"{self.settings['save_path']}/"):
-            os.makedirs(f"{self.settings['save_path']}/")
 
-        img = Image.open(io.BytesIO(res.content))
-        img.save(self.settings['save_path'] + '\\' + name, self.image_format.upper())
+        img_bytes = requests.get(url, stream=True)
+        try:
+            if not os.path.exists(f"{self.settings['save_path']}\\"):
+                os.makedirs(f"{self.settings['save_path']}\\")
+
+            with open(f"{self.settings['save_path']}\\{name}", 'wb') as f:
+                img_bytes.raw.decode_content = True
+                shutil.copyfileobj(img_bytes.raw, f)
+        except Exception as e:
+            print(f"ERROR: {e}")
+            return None
+
         return name
 
     def get_image_urls(self):
@@ -88,6 +94,7 @@ class ParserThread(QtCore.QThread):
                 self.status_updated.emit(f'[{self.downloaded}/{len(self.urls_of_images)}]Final download image {i}')
                 self.downloaded += 1
                 self.pb_updated.emit(1)
+                QtCore.QThread.msleep(50)
             else:
                 image_pool.terminate()
                 return
